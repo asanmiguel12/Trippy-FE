@@ -136,7 +136,7 @@ export const tripService = {
       }
       const updatedTrip = {
         ...trip,
-        name: data.title ?? trip.name,
+        name: data.name ?? trip.name,
         description: data.description ?? trip.description,
         startDate: data.startDate ?? trip.startDate,
         endDate: data.endDate ?? trip.endDate,

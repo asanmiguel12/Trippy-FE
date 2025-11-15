@@ -53,7 +53,7 @@ export interface Activity {
 }
 
 export interface CreateTripRequest {
-  title: string;
+  name: string;
   description: string;
   startDate: string;
   endDate: string;

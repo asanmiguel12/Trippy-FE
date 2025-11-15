@@ -27,10 +27,11 @@ const PlanPage: React.FC = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
     startDate: '',
     endDate: '',
+    location: '',
     isPublic: false,
   });
 
@@ -54,17 +55,25 @@ const PlanPage: React.FC = () => {
 
     const tripData: CreateTripRequest = {
       ...formData,
+      name: formData.name,
       location: selectedDestination,
+      description: formData.description,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      isPublic: formData.isPublic,
       activities,
     };
+
+    // Test change to verify Git tracking
 
     try {
       await createTripMutation.mutate(tripData);
       alert('Trip created successfully!');
       setShowCreateForm(false);
       setFormData({
-        title: '',
+        name: '',
         description: '',
+        location: '',
         startDate: '',
         endDate: '',
         isPublic: false,
@@ -238,8 +247,8 @@ const PlanPage: React.FC = () => {
                       <input
                         type="text"
                         required
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="e.g., Summer Adventure in Tokyo"
                       />
