@@ -43,6 +43,7 @@ const PlanPage: React.FC = () => {
     cost: 0,
     location: '',
     type: 'attraction' as const,
+    isPublic: false,
   });
 
   const handleCreateTrip = async (e: React.FormEvent) => {
@@ -97,6 +98,7 @@ const PlanPage: React.FC = () => {
         cost: 0,
         location: '',
         type: 'attraction',
+        isPublic: false,
       });
     }
   };
