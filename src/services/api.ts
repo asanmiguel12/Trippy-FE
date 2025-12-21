@@ -11,6 +11,13 @@ const isProduction = () => {
   return !baseUrl.includes('localhost') && !baseUrl.includes('127.0.0.1');
 };
 
+// Check if this is a create trip request (POST to /trips)
+const isCreateTripRequest = (config: InternalAxiosRequestConfig): boolean => {
+  const method = config.method?.toUpperCase();
+  const url = config.url || '';
+  return method === 'POST' && url.includes('/trips') && !url.includes('/trips/');
+};
+
 // Global warmup handlers
 let warmupHandlers: {
   showWarmup: () => void;
@@ -63,7 +70,10 @@ const retryRequest = async (
   await new Promise(resolve => setTimeout(resolve, 5000));
 
   try {
-    warmupHandlers?.incrementCheckCount();
+    // Only increment check count for create trip requests
+    if (isCreateTripRequest(config)) {
+      warmupHandlers?.incrementCheckCount();
+    }
     return await axios.request(config);
   } catch (error) {
     if (retryCount < maxRetries - 1) {
@@ -90,8 +100,9 @@ apiClient.interceptors.request.use(
 // Response interceptor with warmup detection
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Backend is ready, hide warmup screen
-    if (isProduction()) {
+    // Backend is ready, hide warmup screen (only for create trip requests)
+    const config = response.config as InternalAxiosRequestConfig;
+    if (isProduction() && isCreateTripRequest(config)) {
       warmupHandlers?.hideWarmup();
     }
     return response;
@@ -102,9 +113,12 @@ apiClient.interceptors.response.use(
       code: error.code || 'UNKNOWN_ERROR',
     };
 
+    const config = error.config as InternalAxiosRequestConfig;
+    const isCreateTrip = config ? isCreateTripRequest(config) : false;
+
     if (error.response) {
-      // Server responded - hide warmup
-      if (isProduction()) {
+      // Server responded - hide warmup (only for create trip requests)
+      if (isProduction() && isCreateTrip) {
         warmupHandlers?.hideWarmup();
       }
       const responseData = error.response.data as any;
@@ -113,15 +127,14 @@ apiClient.interceptors.response.use(
       apiError.details = responseData;
     } else if (error.request) {
       // No response received (timeout/network error)
-      if (isProduction()) {
+      if (isProduction() && isCreateTrip) {
         const isTimeout = error.code === 'ECONNABORTED' || error.message.includes('timeout');
         const isNetworkError = error.code === 'ERR_NETWORK';
         
         if (isTimeout || isNetworkError) {
-          const config = error.config as InternalAxiosRequestConfig;
           const requestKey = getRequestKey(config);
           
-          // Show warmup
+          // Show warmup only for create trip requests
           warmupHandlers?.showWarmup();
           warmupHandlers?.incrementCheckCount();
           

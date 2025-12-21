@@ -1,6 +1,6 @@
 # Trippy - Travel Planning Made Simple
 
-![Trippy Logo](docs/screenshots/logo.png) <!-- Add your logo here -->
+![Trippy Logo](TrippyLogo.png)
 
 A modern, responsive web application for planning and managing your travel adventures. Discover destinations, create detailed trip itineraries, and explore the world with Trippy.
 
@@ -12,7 +12,7 @@ A modern, responsive web application for planning and managing your travel adven
 ## 📸 Screenshots
 
 ### Homepage
-![Homepage](docs/screenshots/homepage.png)
+![Homepage](TrippyHome.png)
 *The beautiful homepage showcasing popular destinations with stunning imagery and easy navigation.*
 
 ### Destination Discovery
@@ -118,45 +118,10 @@ VITE_API_BASE_URL=http://localhost:3001/api
 
 See [GOOGLE_MAPS_SETUP.md](GOOGLE_MAPS_SETUP.md) for detailed instructions.
 
-## 🏗️ Project Structure
-
-```
-Trippy-FE/
-├── src/
-│   ├── components/          # React components
-│   │   ├── HomePage.tsx
-│   │   ├── PlanPage.tsx
-│   │   ├── TripMap.tsx
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── ErrorMessage.tsx
-│   │   └── BackendWarmupScreen.tsx
-│   ├── contexts/           # React contexts
-│   │   └── BackendWarmupContext.tsx
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useApi.ts
-│   │   ├── useDestinations.ts
-│   │   └── useTrips.ts
-│   ├── services/           # API services
-│   │   ├── api.ts
-│   │   ├── destinationService.ts
-│   │   └── tripService.ts
-│   ├── types/              # TypeScript types
-│   │   └── api.ts
-│   ├── App.tsx             # Main app component
-│   ├── main.tsx            # Entry point
-│   └── index.css           # Global styles
-├── public/                  # Static assets
-├── docs/                    # Documentation
-│   └── screenshots/        # Screenshot images
-├── .env                    # Environment variables
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
-
 ## 🔧 Tech Stack
 
 - **Frontend Framework**: React 18.2.0
+- **Backend Framework**: JavaVersion.VERSION_17
 - **Language**: TypeScript 5.2.2
 - **Build Tool**: Vite 5.0.8
 - **Styling**: Tailwind CSS 3.3.6
@@ -164,10 +129,15 @@ Trippy-FE/
 - **HTTP Client**: Axios 1.12.2
 - **Maps**: Google Maps API (@react-google-maps/api)
 - **Icons**: Lucide React
+- **Database**: Supabase (Free Tier)
 
 ## 🌐 Backend Warmup Feature
 
 Trippy includes intelligent backend warmup detection for free-tier hosting services (like Render) that spin down after inactivity.
+
+## Database - Supabase
+![Database](TrippyDB.png)
+*FPowered by Supabase for database storage, authentication, and real‑time functionality.”*
 
 ### How It Works
 

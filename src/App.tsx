@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { BackendWarmupProvider, useBackendWarmup } from './contexts/BackendWarmupContext';
 import { setWarmupHandlers } from './services/api';
@@ -9,6 +9,8 @@ import './index.css';
 
 function AppContent() {
   const { isWarmingUp, checkCount, showWarmup, hideWarmup, incrementCheckCount } = useBackendWarmup();
+  const location = useLocation();
+  const isPlanPage = location.pathname === '/plan';
 
   useEffect(() => {
     setWarmupHandlers({
@@ -20,15 +22,13 @@ function AppContent() {
 
   return (
     <>
-      {isWarmingUp && <BackendWarmupScreen checkCount={checkCount} />}
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/plan" element={<PlanPage />} />
-          </Routes>
-        </div>
-      </Router>
+      {isWarmingUp && isPlanPage && <BackendWarmupScreen checkCount={checkCount} />}
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/plan" element={<PlanPage />} />
+        </Routes>
+      </div>
     </>
   );
 }
@@ -36,7 +36,9 @@ function AppContent() {
 function App() {
   return (
     <BackendWarmupProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </BackendWarmupProvider>
   );
 }
