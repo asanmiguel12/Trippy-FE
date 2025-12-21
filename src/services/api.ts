@@ -31,8 +31,24 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Track retry attempts per request
-const retryAttempts = new Map<string, number>();
+// Track retry attempts per request (include data hash for POST/PUT)
+const retryAttempts = new Map<string, Promise<AxiosResponse>>();
+
+// Create a unique key for requests (include data for POST/PUT)
+const getRequestKey = (config: InternalAxiosRequestConfig): string => {
+  const method = config.method?.toUpperCase() || 'GET';
+  const url = config.url || '';
+  
+  // For POST/PUT/PATCH, include a hash of the data to differentiate requests
+  if (['POST', 'PUT', 'PATCH'].includes(method) && config.data) {
+    const dataStr = JSON.stringify(config.data);
+    // Simple hash (you could use a proper hash function)
+    const dataHash = dataStr.length > 50 ? dataStr.substring(0, 50) : dataStr;
+    return `${method}-${url}-${dataHash}`;
+  }
+  
+  return `${method}-${url}`;
+};
 
 const retryRequest = async (
   config: InternalAxiosRequestConfig,
@@ -103,23 +119,32 @@ apiClient.interceptors.response.use(
         
         if (isTimeout || isNetworkError) {
           const config = error.config as InternalAxiosRequestConfig;
-          const requestKey = `${config.method}-${config.url}`;
+          const requestKey = getRequestKey(config);
           
-          // Show warmup and retry
+          // Show warmup
           warmupHandlers?.showWarmup();
           warmupHandlers?.incrementCheckCount();
           
+          // Check if we're already retrying this exact request
           if (config && !retryAttempts.has(requestKey)) {
-            retryAttempts.set(requestKey, 0);
-            try {
-              const response = await retryRequest(config);
-              retryAttempts.delete(requestKey);
-              warmupHandlers?.hideWarmup();
-              return Promise.resolve(response);
-            } catch (retryError) {
-              retryAttempts.delete(requestKey);
-              warmupHandlers?.hideWarmup();
-            }
+            // Create a retry promise and store it
+            const retryPromise = retryRequest(config)
+              .then((response) => {
+                retryAttempts.delete(requestKey);
+                warmupHandlers?.hideWarmup();
+                return response;
+              })
+              .catch((retryError) => {
+                retryAttempts.delete(requestKey);
+                warmupHandlers?.hideWarmup();
+                throw retryError;
+              });
+            
+            retryAttempts.set(requestKey, retryPromise);
+            return retryPromise;
+          } else if (retryAttempts.has(requestKey)) {
+            // If already retrying, return the existing promise
+            return retryAttempts.get(requestKey)!;
           }
         }
       }

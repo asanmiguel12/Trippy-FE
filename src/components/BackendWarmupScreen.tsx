@@ -20,7 +20,7 @@ const BackendWarmupScreen: React.FC<BackendWarmupScreenProps> = ({ checkCount })
         <p className="text-gray-600 mb-4">
           {checkCount > 1 
             ? `Still loading… (Attempt ${checkCount})`
-            : 'Please wait while we wake up the backend server'
+            : 'Please wait while we wake up the backend server. *This may take a couple minutes.'
           }
         </p>
         

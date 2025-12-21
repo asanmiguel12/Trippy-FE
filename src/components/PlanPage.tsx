@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
@@ -13,6 +13,8 @@ const PlanPage: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState('');
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitInProgressRef = useRef(false);
   
   
   // Fetch user's trips and destinations
@@ -49,6 +51,13 @@ const PlanPage: React.FC = () => {
   const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent duplicate submissions (handles StrictMode double render)
+    if (submitInProgressRef.current) {
+      return;
+    }
+    
+    submitInProgressRef.current = true;
+    
     if (!selectedDestination) {
       alert('Please select a destination');
       return;
@@ -84,6 +93,10 @@ const PlanPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Failed to create trip:', error);
+      // Don't close form on error, let user retry
+    } finally {
+      setIsSubmitting(false);
+      submitInProgressRef.current = false;
     }
   };
 
@@ -436,10 +449,10 @@ const PlanPage: React.FC = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={createTripMutation.loading}
-                      className="flex-1 btn-primary"
+                      disabled={createTripMutation.loading || isSubmitting}
+                      className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {createTripMutation.loading ? (
+                      {createTripMutation.loading || isSubmitting ? (
                         <div className="flex items-center justify-center">
                           <LoadingSpinner size="sm" className="mr-2" />
                           Creating...

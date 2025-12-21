@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Users, Star, ArrowRight, Globe, Camera, Heart } from 'lucide-react';
 import { usePopularDestinations } from '../hooks/useDestinations';
 import { useToggleFavorite } from '../hooks/useDestinations';
-import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 
 const HomePage: React.FC = () => {
@@ -145,13 +144,6 @@ const HomePage: React.FC = () => {
             </p>
           </div>
           
-          {/* Loading State */}
-          {destinationsLoading && (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          )}
-
           {/* Error State */}
           {destinationsError && (
             <div className="max-w-md mx-auto">
