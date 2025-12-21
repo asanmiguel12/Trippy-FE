@@ -37,3 +37,7 @@ gradlew.bat
 .env.test.local
 .env.production.local
 Trippy-BE/
+
+# Lock files (choose one based on your package manager)
+package-lock.json  # If using yarn
+# yarn.lock        # If using npm

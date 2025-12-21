@@ -36,7 +36,7 @@ export const useBackendStatus = () => {
 
   useEffect(() => {
     let isMounted = true;
-    let retryInterval: NodeJS.Timeout | null = null;
+    let retryInterval: number | null = null; // Changed from NodeJS.Timeout to number
 
     const attemptConnection = async () => {
       if (!isMounted) return;
