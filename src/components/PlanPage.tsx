@@ -15,9 +15,7 @@ const PlanPage: React.FC = () => {
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitInProgressRef = useRef(false);
-  
-  
-  // Fetch user's trips and destinations
+  const [loadingMessage, setLoadingMessage] = useState('');
   const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
@@ -27,7 +25,6 @@ const PlanPage: React.FC = () => {
   console.log('PlanPage - tripsLoading:', tripsLoading);
   console.log('PlanPage - tripsError:', tripsError);
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -50,19 +47,25 @@ const PlanPage: React.FC = () => {
 
   const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Prevent duplicate submissions (handles StrictMode double render)
+  
     if (submitInProgressRef.current) {
       return;
     }
-    
+  
     submitInProgressRef.current = true;
-    
+    setIsSubmitting(true);
+  
+    const warmupTimer = setTimeout(() => {
+      if (submitInProgressRef.current) {
+        setLoadingMessage('Warming up the server... This may take a moment.');
+      }
+    }, 1200); 
+  
     if (!selectedDestination) {
       alert('Please select a destination');
       return;
     }
-
+  
     const tripData: CreateTripRequest = {
       ...formData,
       name: formData.name,
@@ -73,9 +76,7 @@ const PlanPage: React.FC = () => {
       isPublic: formData.isPublic,
       activities,
     };
-
-    // Test change to verify Git tracking
-
+  
     try {
       await createTripMutation.mutate(tripData);
       alert('Trip created successfully!');
@@ -93,12 +94,14 @@ const PlanPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Failed to create trip:', error);
-      // Don't close form on error, let user retry
     } finally {
+      clearTimeout(warmupTimer);
+      setLoadingMessage(''); // remove message
       setIsSubmitting(false);
       submitInProgressRef.current = false;
     }
   };
+  
 
   const addActivity = () => {
     if (newActivity.name && newActivity.description) {
@@ -455,7 +458,7 @@ const PlanPage: React.FC = () => {
                       {createTripMutation.loading || isSubmitting ? (
                         <div className="flex items-center justify-center">
                           <LoadingSpinner size="sm" className="mr-2" />
-                          Creating...
+                          {loadingMessage || 'Creating Your Trip!'}
                         </div>
                       ) : (
                         'Create Trip'

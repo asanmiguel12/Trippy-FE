@@ -137,7 +137,7 @@ Trippy includes intelligent backend warmup detection for free-tier hosting servi
 
 ## Database - Supabase
 ![Database](TrippyDB.png)
-*FPowered by Supabase for database storage, authentication, and real‑time functionality.”*
+*Powered by Supabase for database storage, authentication, and real‑time functionality.”*
 
 ### How It Works
 
