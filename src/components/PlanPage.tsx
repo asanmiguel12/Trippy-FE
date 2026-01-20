@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
@@ -8,7 +8,7 @@ import ErrorMessage from './ErrorMessage';
 import { Trip } from '../types/api';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
-import { tripService } from '../services/tripService';
+// import { tripService } from '../services/tripService';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const PlanPage: React.FC = () => {
   const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
-  const [userTrips, setUserTrips] = useState<Trip[]>([]);
+  const [userTrips] = useState<Trip[]>([]);
 
   // Debug: Log the data to see what's happening
   console.log('PlanPage - tripsData:', tripsData);
@@ -105,20 +105,20 @@ const PlanPage: React.FC = () => {
     }
   };
 
-  const getUserTrips = async () => {
-    try {
-      const response = await tripService.getUserTrips(); 
-      setUserTrips(response.data);                      
-      return response.data;                              
-    } catch (error) {
-      console.error("Failed to fetch user trips:", error);
-      return [];
-    }
-  };
+  // const getUserTrips = async () => {
+  //   try {
+  //     const response = await tripService.getUserTrips(); 
+  //     setUserTrips(response.data);                      
+  //     return response.data;                              
+  //   } catch (error) {
+  //     console.error("Failed to fetch user trips:", error);
+  //     return [];
+  //   }
+  // };
 
-  useEffect(() => {
-    getUserTrips();
-  }, []);
+  // useEffect(() => {
+  //   getUserTrips();
+  // }, []);
   
 
   const addActivity = () => {
