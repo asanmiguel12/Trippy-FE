@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
@@ -107,14 +107,18 @@ const PlanPage: React.FC = () => {
 
   const getUserTrips = async () => {
     try {
-      const response = await tripService.getUserTrips(); // call your API
-      setUserTrips(response.data);                       // update state
-      return response.data;                              // return for chaining if needed
+      const response = await tripService.getUserTrips(); 
+      setUserTrips(response.data);                      
+      return response.data;                              
     } catch (error) {
       console.error("Failed to fetch user trips:", error);
       return [];
     }
   };
+
+  useEffect(() => {
+    getUserTrips();
+  }, []);
   
 
   const addActivity = () => {
