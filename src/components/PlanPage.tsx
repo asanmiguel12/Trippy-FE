@@ -5,8 +5,10 @@ import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import { Trip } from '../types/api';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
+import { tripService } from '../services/tripService';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const PlanPage: React.FC = () => {
   const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
+  const [userTrips, setUserTrips] = useState<Trip[]>([]);
 
   // Debug: Log the data to see what's happening
   console.log('PlanPage - tripsData:', tripsData);
@@ -101,6 +104,17 @@ const PlanPage: React.FC = () => {
       submitInProgressRef.current = false;
     }
   };
+
+  const getUserTrips = async () => {
+    try {
+      const response = await tripService.getUserTrips(); // call your API
+      setUserTrips(response.data);                       // update state
+      return response.data;                              // return for chaining if needed
+    } catch (error) {
+      console.error("Failed to fetch user trips:", error);
+      return [];
+    }
+  };
   
 
   const addActivity = () => {
@@ -167,78 +181,73 @@ const PlanPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Trips List */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Your Trips</h2>
-          
-          {tripsLoading && <LoadingSpinner />}
-          
-          {tripsError && (
-            <ErrorMessage error={tripsError} onRetry={refetch} />
-          )}
-          
-          {tripsData?.data && tripsData.data.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tripsData.data.map((trip) => (
-                <div key={trip.id} className="card p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-semibold text-gray-900">{trip.name}</h3>
-                    <div className="flex space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-primary-600">
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4">{trip.description}</p>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {trip.destination.name}, {trip.destination.country}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Users className="h-4 w-4 mr-2" />
-                      {trip.activities.length} activities
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      ${trip.totalCost.toLocaleString()}
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <button className="flex-1 btn-primary text-sm">
-                      View Details
-                    </button>
-                    <button className="flex-1 btn-secondary text-sm">
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
-              <p className="text-gray-600 mb-6">Start planning your first adventure!</p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="btn-primary"
-              >
-                Create Your First Trip
+     {/* Trips List */}
+  <div className="mb-8">
+  <h2 className="text-3xl font-bold text-gray-900 mb-6">Your Trips</h2>
+
+  {tripsError && (
+    <ErrorMessage error={tripsError} onRetry={refetch} />
+  )}
+
+  {userTrips.length > 0 ? (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {userTrips.map((trip) => (
+        <div key={trip.id} className="card p-6">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-xl font-semibold text-gray-900">{trip.name}</h3>
+            <div className="flex space-x-2">
+              <button className="p-1 text-gray-400 hover:text-primary-600">
+                <Edit className="h-4 w-4" />
+              </button>
+              <button className="p-1 text-gray-400 hover:text-red-600">
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
-          )}
+          </div>
+
+          <p className="text-gray-600 mb-4">{trip.description}</p>
+
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center text-sm text-gray-500">
+              <MapPin className="h-4 w-4 mr-2" />
+              {trip.destination.name}, {trip.destination.country}
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <Calendar className="h-4 w-4 mr-2" />
+              {new Date(trip.startDate).toLocaleDateString()} -{" "}
+              {new Date(trip.endDate).toLocaleDateString()}
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <Users className="h-4 w-4 mr-2" />
+              {trip.activities.length} activities
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <DollarSign className="h-4 w-4 mr-2" />
+              ${trip.totalCost.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="flex space-x-2">
+            <button className="flex-1 btn-primary text-sm">View Details</button>
+            <button className="flex-1 btn-secondary text-sm">Edit</button>
+          </div>
         </div>
+      ))}
+    </div>
+  ) : (
+    <div className="text-center py-12">
+      <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
+      <p className="text-gray-600 mb-6">Start planning your first adventure!</p>
+      <button
+        onClick={() => setShowCreateForm(true)}
+        className="btn-primary"
+      >
+        Create Your First Trip
+      </button>
+    </div>
+  )}
+</div>
 
         {/* Create Trip Modal */}
         {showCreateForm && (
