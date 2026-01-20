@@ -5,15 +5,17 @@ import {
   ArrowRight,
   Globe,
   Camera,
-  Heart
+  Heart,
+  MapPin,
+  Calendar,
+  Users
 } from 'lucide-react';
 import { usePopularDestinations, useToggleFavorite } from '../hooks/useDestinations';
 import ErrorMessage from './ErrorMessage';
-import AuthModal from './AuthModal' ;
+import AuthModal from './AuthModal';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const {
@@ -25,9 +27,9 @@ const HomePage: React.FC = () => {
 
   const toggleFavoriteMutation = useToggleFavorite();
 
-  const handleToggleFavorite = async (location: string) => {
+  const handleToggleFavorite = async (destinationId: string) => {
     try {
-      await toggleFavoriteMutation.mutate(location);
+      await toggleFavoriteMutation.mutate(destinationId);
       refetch();
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
@@ -46,15 +48,21 @@ const HomePage: React.FC = () => {
             </div>
 
             <nav className="hidden md:flex space-x-8">
-              <a className="text-gray-600 hover:text-primary-600 cursor-pointer">Destinations</a>
+              <span className="text-gray-600 hover:text-primary-600 cursor-pointer">
+                Destinations
+              </span>
               <button
                 onClick={() => navigate('/plan')}
                 className="text-gray-600 hover:text-primary-600 bg-transparent border-none cursor-pointer"
               >
                 Plans
               </button>
-              <a className="text-gray-600 hover:text-primary-600 cursor-pointer">About</a>
-              <a className="text-gray-600 hover:text-primary-600 cursor-pointer">Contact</a>
+              <span className="text-gray-600 hover:text-primary-600 cursor-pointer">
+                About
+              </span>
+              <span className="text-gray-600 hover:text-primary-600 cursor-pointer">
+                Contact
+              </span>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -75,7 +83,7 @@ const HomePage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -87,6 +95,7 @@ const HomePage: React.FC = () => {
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Discover amazing destinations, create custom itineraries, and make unforgettable memories.
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate('/plan')}
@@ -103,22 +112,64 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Trippy?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Our platform combines cutting-edge technology with travel expertise.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="card p-8 text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <MapPin className="h-8 w-8 text-primary-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Smart Recommendations</h3>
+              <p className="text-gray-600">
+                Personalized destination suggestions based on your interests.
+              </p>
+            </div>
+
+            <div className="card p-8 text-center">
+              <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Calendar className="h-8 w-8 text-secondary-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Detailed Itineraries</h3>
+              <p className="text-gray-600">
+                Day-by-day plans with activities, food, and attractions.
+              </p>
+            </div>
+
+            <div className="card p-8 text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="h-8 w-8 text-primary-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Group Planning</h3>
+              <p className="text-gray-600">
+                Collaborate with friends and family in real time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Popular Destinations */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Popular Destinations
-            </h2>
+            <h2 className="text-4xl font-bold mb-4">Popular Destinations</h2>
             <p className="text-xl text-gray-600">
               Discover the most loved places around the world
             </p>
           </div>
 
           {destinationsError && (
-            <div className="max-w-md mx-auto">
-              <ErrorMessage error={destinationsError} onRetry={refetch} />
-            </div>
+            <ErrorMessage error={destinationsError} onRetry={refetch} />
           )}
 
           {destinationsData?.data && (
@@ -126,59 +177,40 @@ const HomePage: React.FC = () => {
               {destinationsData.data.map(destination => (
                 <div
                   key={destination.id}
-                  className="card overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
+                  className="card overflow-hidden cursor-pointer hover:shadow-lg"
                   onClick={() => navigate('/plan')}
                 >
                   <div
-                    className="relative h-64"
-                    style={{
-                      backgroundImage: destination.imageUrl
-                        ? `url(${destination.imageUrl})`
-                        : undefined,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
+                    className="relative h-64 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${destination.imageUrl})` }}
                   >
                     <div className="absolute inset-0 bg-black bg-opacity-20" />
-                    <div className="absolute top-4 right-4">
-                      <button
-                        className="bg-white bg-opacity-20 backdrop-blur-sm rounded-full p-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(destination.id);
-                        }}
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${
-                            destination.isFavorite
-                              ? 'text-red-400 fill-red-400'
-                              : 'text-white'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <h3 className="text-2xl font-bold mb-1">
-                        {destination.name}
-                      </h3>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="ml-1 text-sm">
-                          {destination.rating.toFixed(1)} (
-                          {destination.reviewCount.toLocaleString()} reviews)
-                        </span>
-                      </div>
-                    </div>
+                    <button
+                      className="absolute top-4 right-4 bg-white bg-opacity-20 rounded-full p-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleFavorite(destination.id);
+                      }}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          destination.isFavorite
+                            ? 'text-red-400 fill-red-400'
+                            : 'text-white'
+                        }`}
+                      />
+                    </button>
                   </div>
+
                   <div className="p-6">
-                    <p className="text-gray-600 mb-4">
-                      {destination.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold text-primary-600">
-                        ${destination.price.toLocaleString()}
+                    <h3 className="text-xl font-semibold">{destination.name}</h3>
+                    <p className="text-gray-600 my-2">{destination.description}</p>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                      <span className="ml-1 text-sm">
+                        {destination.rating.toFixed(1)} (
+                        {destination.reviewCount.toLocaleString()})
                       </span>
-                      <span className="text-sm text-gray-500">per person</span>
                     </div>
                   </div>
                 </div>
@@ -187,19 +219,83 @@ const HomePage: React.FC = () => {
           )}
 
           {!destinationsLoading &&
-            !destinationsError &&
             (!destinationsData?.data || destinationsData.data.length === 0) && (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">
-                  No popular destinations available.
-                </p>
-                <button onClick={refetch} className="mt-4 btn-primary">
-                  Refresh
-                </button>
+                <p className="text-gray-600">No destinations available.</p>
               </div>
             )}
         </div>
       </section>
+
+            {/* CTA Section */}
+            <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-800">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Start Your Adventure?
+          </h2>
+          <p className="text-xl text-primary-100 mb-8">
+            Join thousands of travelers who have discovered their perfect trips with Trippy.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => navigate('/plan')}
+              className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-lg"
+            >
+              Create Free Account
+            </button>
+            <button className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-primary-600 transition-colors duration-200 text-lg">
+              Learn More
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Globe className="h-6 w-6 text-primary-400" />
+                <span className="text-xl font-bold">Trippy</span>
+              </div>
+              <p className="text-gray-400">
+                Making travel planning simple, smart, and unforgettable.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 Trippy. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
 
       {/* Auth Modal */}
       {showAuthModal && (
