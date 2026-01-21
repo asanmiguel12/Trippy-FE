@@ -1,15 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
-import { Trip } from '../types/api';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
-import { tripService } from '../services/tripService';
-// import { tripService } from '../services/tripService';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
