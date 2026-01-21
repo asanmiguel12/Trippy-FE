@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
@@ -8,6 +8,7 @@ import ErrorMessage from './ErrorMessage';
 import { Trip } from '../types/api';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
+import { tripService } from '../services/tripService';
 // import { tripService } from '../services/tripService';
 
 const PlanPage: React.FC = () => {
@@ -21,12 +22,17 @@ const PlanPage: React.FC = () => {
   const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
-  const [userTrips] = useState<Trip[]>([]);
+  const userTrips = tripsData ?? [];
+
 
   // Debug: Log the data to see what's happening
   console.log('PlanPage - tripsData:', tripsData);
   console.log('PlanPage - tripsLoading:', tripsLoading);
   console.log('PlanPage - tripsError:', tripsError);
+
+  useEffect(() => {
+    console.log('[PlanPage] tripsData changed:', tripsData);
+  }, [tripsData]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -104,23 +110,7 @@ const PlanPage: React.FC = () => {
       submitInProgressRef.current = false;
     }
   };
-
-  // const getUserTrips = async () => {
-  //   try {
-  //     const response = await tripService.getUserTrips(); 
-  //     setUserTrips(response.data);                      
-  //     return response.data;                              
-  //   } catch (error) {
-  //     console.error("Failed to fetch user trips:", error);
-  //     return [];
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   getUserTrips();
-  // }, []);
   
-
   const addActivity = () => {
     if (newActivity.name && newActivity.description) {
       setActivities([...activities, newActivity]);
@@ -185,19 +175,49 @@ const PlanPage: React.FC = () => {
           </div>
         </div>
 
-     {/* Trips List */}
-  <div className="mb-8">
+  {/* Trips List */}
+<div className="mb-8">
   <h2 className="text-3xl font-bold text-gray-900 mb-6">Your Trips</h2>
 
+  {/* Show loading spinner while fetching */}
+  {tripsLoading && (
+    <div className="flex justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+  )}
+
+  {/* Show error message if there is one */}
   {tripsError && (
     <ErrorMessage error={tripsError} onRetry={refetch} />
   )}
 
-  {userTrips.length > 0 ? (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {userTrips.map((trip) => (
-        <div key={trip.id} className="card p-6">
-          <div className="flex justify-between items-start mb-4">
+  {/* Show "no trips" message if fetch completed but array is empty */}
+  {!tripsLoading &&
+    !tripsError &&
+    Array.isArray(userTrips) &&
+    userTrips.length === 0 && (
+      <div className="text-center py-12">
+        <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
+        <p className="text-gray-600 mb-6">Start planning your first adventure!</p>
+      <button
+        onClick={() => setShowCreateForm(true)}
+        className="btn-primary"
+      >
+        Create Your First Trip
+      </button>
+    </div>
+  )}
+
+  {/* Render trips if there are any */}
+  {!tripsLoading &&
+    !tripsError &&
+    Array.isArray(userTrips) &&
+    userTrips.length > 0 && (
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {userTrips.map((trip: any) => (
+          <div key={trip.id} className="card p-6">
+            <div className="flex justify-between items-start mb-4">
             <h3 className="text-xl font-semibold text-gray-900">{trip.name}</h3>
             <div className="flex space-x-2">
               <button className="p-1 text-gray-400 hover:text-primary-600">
@@ -214,7 +234,7 @@ const PlanPage: React.FC = () => {
           <div className="space-y-2 mb-4">
             <div className="flex items-center text-sm text-gray-500">
               <MapPin className="h-4 w-4 mr-2" />
-              {trip.destination.name}, {trip.destination.country}
+              {trip.destination?.name}, {trip.destination?.country}
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-2" />
@@ -223,11 +243,11 @@ const PlanPage: React.FC = () => {
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <Users className="h-4 w-4 mr-2" />
-              {trip.activities.length} activities
+              {trip.activities?.length ?? 0} activities
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <DollarSign className="h-4 w-4 mr-2" />
-              ${trip.totalCost.toLocaleString()}
+              ${trip.totalCost?.toLocaleString() ?? 0}
             </div>
           </div>
 
@@ -238,20 +258,9 @@ const PlanPage: React.FC = () => {
         </div>
       ))}
     </div>
-  ) : (
-    <div className="text-center py-12">
-      <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
-      <p className="text-gray-600 mb-6">Start planning your first adventure!</p>
-      <button
-        onClick={() => setShowCreateForm(true)}
-        className="btn-primary"
-      >
-        Create Your First Trip
-      </button>
-    </div>
   )}
 </div>
+
 
         {/* Create Trip Modal */}
         {showCreateForm && (

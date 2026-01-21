@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Frontend (Chrome)",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:3000", // Adjust to your local development server URL
+        "webRoot": "${workspaceFolder}/src", // Adjust to your source file directory
+        "sourceMaps": true
+      }
+    ]
+  }
+  
