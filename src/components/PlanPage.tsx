@@ -22,6 +22,16 @@ const PlanPage: React.FC = () => {
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData ?? [];
 
+  const ITEMS_PER_PAGE = 4;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const tripsArray = Array.isArray(userTrips) ? userTrips : [];
+  const totalPages = Math.ceil(tripsArray.length / ITEMS_PER_PAGE);
+
+  const paginatedTrips = tripsArray.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   // Debug: Log the data to see what's happening
   console.log('PlanPage - tripsData:', tripsData);
@@ -129,6 +139,11 @@ const PlanPage: React.FC = () => {
     setActivities(activities.filter((_, i) => i !== index));
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [userTrips]);
+  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
       {/* Header */}
@@ -207,15 +222,14 @@ const PlanPage: React.FC = () => {
     </div>
   )}
 
-  {/* Render trips if there are any */}
-  {!tripsLoading &&
-    !tripsError &&
-    Array.isArray(userTrips) &&
-    userTrips.length > 0 && (
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {userTrips.map((trip: any) => (
-          <div key={trip.id} className="card p-6">
-            <div className="flex justify-between items-start mb-4">
+  {/* Render trips + pagination together */}
+{!tripsLoading && !tripsError && paginatedTrips.length > 0 && (
+  <>
+    {/* Trips Grid */}
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {paginatedTrips.map((trip: any) => (
+        <div key={trip.id} className="card p-6">
+          <div className="flex justify-between items-start mb-4">
             <h3 className="text-xl font-semibold text-gray-900">{trip.name}</h3>
             <div className="flex space-x-2">
               <button className="p-1 text-gray-400 hover:text-primary-600">
@@ -236,7 +250,7 @@ const PlanPage: React.FC = () => {
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-2" />
-              {new Date(trip.startDate).toLocaleDateString()} -{" "}
+              {new Date(trip.startDate).toLocaleDateString()} –{" "}
               {new Date(trip.endDate).toLocaleDateString()}
             </div>
             <div className="flex items-center text-sm text-gray-500">
@@ -256,9 +270,44 @@ const PlanPage: React.FC = () => {
         </div>
       ))}
     </div>
-  )}
-</div>
 
+    {/* Pagination Controls */}
+    {totalPages > 1 && (
+      <div className="flex justify-center items-center mt-8 space-x-2">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(p => p - 1)}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            className={`px-3 py-1 rounded border ${
+              currentPage === i + 1
+                ? "bg-primary-600 text-white"
+                : "bg-white"
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(p => p + 1)}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    )}
+  </>
+)}
+</div> 
 
         {/* Create Trip Modal */}
         {showCreateForm && (
@@ -493,6 +542,6 @@ const PlanPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default PlanPage;
