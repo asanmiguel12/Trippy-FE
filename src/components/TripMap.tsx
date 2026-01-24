@@ -1,13 +1,13 @@
-import React from 'react';
-import { GoogleMap, Marker, LoadScript } from '@react-google-maps/api';
+import React, { useState } from 'react';
+import { GoogleMap, Marker, LoadScript, Autocomplete } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
   height: '400px',
 };
 
-const center = {
-  lat: 37.7749, // Example: San Francisco
+const defaultCenter = {
+  lat: 37.7749,
   lng: -122.4194,
 };
 
@@ -17,32 +17,54 @@ interface TripMapProps {
   markers?: Array<{ lat: number; lng: number; title?: string }>;
 }
 
-const TripMap: React.FC<TripMapProps> = ({ 
-  center: mapCenter = center, 
-  zoom = 10, 
-  markers = [] 
+const TripMap: React.FC<TripMapProps> = ({
+  center = defaultCenter,
+  zoom = 10,
+  markers = [],
 }) => {
   const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY;
 
-  if (!apiKey || apiKey === 'your_api_key_here') {
-    return (
-      <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🗺️</div>
-          <p className="text-gray-700 font-semibold mb-2">Google Maps API key not configured</p>
-          <p className="text-sm text-gray-600">
-            Please add VITE_GOOGLE_MAPS_API_KEY to your .env file
-          </p>
-        </div>
-      </div>
-    );
+  const [mapCenter, setMapCenter] = useState(center);
+  const [searchMarker, setSearchMarker] = useState<{ lat: number; lng: number } | null>(null);
+  const [autocomplete, setAutocomplete] =
+    useState<google.maps.places.Autocomplete | null>(null);
+
+  if (!apiKey) {
+    return <div>Google Maps API key not configured</div>;
   }
 
+  const onPlaceChanged = () => {
+    if (!autocomplete) return;
+
+    const place = autocomplete.getPlace();
+    if (!place.geometry?.location) return;
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    setMapCenter({ lat, lng });
+    setSearchMarker({ lat, lng });
+  };
+
   return (
-    <LoadScript googleMapsApiKey={apiKey}>
-      <GoogleMap 
-        mapContainerStyle={containerStyle} 
-        center={mapCenter} 
+    <LoadScript googleMapsApiKey={apiKey} libraries={['places']}>
+      {/* Search Bar */}
+      <div className="mb-3">
+        <Autocomplete
+          onLoad={(auto) => setAutocomplete(auto)}
+          onPlaceChanged={onPlaceChanged}
+        >
+          <input
+            type="text"
+            placeholder="Search for a location"
+            className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none"
+          />
+        </Autocomplete>
+      </div>
+
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={mapCenter}
         zoom={zoom}
         options={{
           streetViewControl: false,
@@ -50,17 +72,17 @@ const TripMap: React.FC<TripMapProps> = ({
           fullscreenControl: false,
         }}
       >
-        {/* Default center marker */}
-        <Marker position={mapCenter} />
-        
-        {/* Additional markers */}
+        {/* Existing markers */}
         {markers.map((marker, index) => (
-          <Marker 
+          <Marker
             key={index}
             position={{ lat: marker.lat, lng: marker.lng }}
             title={marker.title}
           />
         ))}
+
+        {/* Marker from search */}
+        {searchMarker && <Marker position={searchMarker} />}
       </GoogleMap>
     </LoadScript>
   );

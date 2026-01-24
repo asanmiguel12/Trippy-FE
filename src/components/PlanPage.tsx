@@ -22,7 +22,7 @@ const PlanPage: React.FC = () => {
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData ?? [];
 
-  const ITEMS_PER_PAGE = 4;
+  const ITEMS_PER_PAGE = 3;
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const tripsArray = Array.isArray(userTrips) ? userTrips : [];
