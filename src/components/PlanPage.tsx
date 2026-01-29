@@ -21,7 +21,7 @@ const PlanPage: React.FC = () => {
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData?.data ?? [];
-  const isLoggedIn = !!sessionStorage.getItem('access_token');
+  // const isLoggedIn = !!sessionStorage.getItem('access_token');
 
 
   const ITEMS_PER_PAGE = 3;
