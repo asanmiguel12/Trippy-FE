@@ -169,6 +169,23 @@ apiClient.interceptors.response.use(
   }
 );
 
+export async function authFetch(
+  url: string,
+  options: RequestInit = {}
+) {
+  const token = sessionStorage.getItem('access_token');
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+
 // Generic API methods
 export const api = {
   get: async <T>(url: string, params?: Record<string, any>): Promise<ApiResponse<T>> => {

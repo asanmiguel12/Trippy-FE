@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 
 interface AuthModalProps {
@@ -11,12 +11,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Replace with Supabase / backend auth call
-    console.log('Auth submit:', { email, password });
-
-    onClose();
+  
+    try {
+      const res = await fetch(
+        'https://trippy-be.onrender.com/api/auth/login',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: email,
+            password
+          })
+        }
+      );
+  
+      if (!res.ok) {
+        throw new Error('Authentication failed');
+      }
+  
+      const data = await res.json();
+      console.log('JWT response:', data);
+  
+      sessionStorage.setItem('access_token', data.token);
+  
+      onClose();
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
+  
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
