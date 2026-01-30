@@ -192,33 +192,20 @@ const mockTrips: Trip[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const tripService = {
-  // Get user's trips
-  getUserTrips: async (): Promise<ApiResponse<Trip[]>> => {
-    const token = sessionStorage.getItem('access_token');
-  
-    // 👇 NOT LOGGED IN → return mock data immediately
-    if (!token) {
-      await delay(300);
-      return {
-        data: mockTrips,
-        success: true,
-        message: 'Mock trips (user not logged in)'
-      };
-    }
-  
-    // 👇 LOGGED IN → call real API
-    try {
-      return await api.get<Trip[]>('/trips');
-    } catch (error) {
-      console.error('API error, falling back to mock trips', error);
-      await delay(400);
-      return {
-        data: mockTrips,
-        success: true,
-        message: 'Mock trips (API unavailable)'
-      };
-    }
-  },
+    // Get user's trips
+    getUserTrips: async (): Promise<ApiResponse<Trip[]>> => {
+      try {
+        return await api.get<Trip[]>('/trips');
+      } catch (error) {
+        // Fallback to mock data
+        await delay(400);
+        return {
+          data: mockTrips,
+          success: true,
+          message: 'Using mock data - API not available'
+        };
+      }
+    },
   
 
   // Get trip by ID

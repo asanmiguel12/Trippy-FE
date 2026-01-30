@@ -20,9 +20,7 @@ const PlanPage: React.FC = () => {
   const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
-  const userTrips = tripsData?.data ?? [];
-  // const isLoggedIn = !!sessionStorage.getItem('access_token');
-
+  const userTrips = tripsData ?? [];
 
   const ITEMS_PER_PAGE = 3;
   const [currentPage, setCurrentPage] = useState<number>(1);
