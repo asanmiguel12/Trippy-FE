@@ -11,12 +11,14 @@ import {
   Users
 } from 'lucide-react';
 import { usePopularDestinations, useToggleFavorite } from '../hooks/useDestinations';
+import { useAuth } from '../contexts/AuthContext';
 import ErrorMessage from './ErrorMessage';
 import AuthModal from './AuthModal';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   const {
     data: destinationsData,
@@ -34,6 +36,19 @@ const HomePage: React.FC = () => {
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
+  };
+
+  const handlePrimaryAuthAction = () => {
+    if (isAuthenticated) {
+      navigate('/plan');
+      return;
+    }
+    setShowAuthModal(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowAuthModal(false);
   };
 
   return (
@@ -66,12 +81,24 @@ const HomePage: React.FC = () => {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowAuthModal(true)}
-              >
-                Sign In
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-gray-600">Logged in</span>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="btn-secondary"
+                  onClick={() => setShowAuthModal(true)}
+                >
+                  Sign In
+                </button>
+              )}
               <button
                 onClick={() => navigate('/plan')}
                 className="btn-primary"
@@ -238,10 +265,10 @@ const HomePage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => setShowAuthModal(true)}
+              onClick={handlePrimaryAuthAction}
               className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-lg"
             >
-              Create Free Account
+              {isAuthenticated ? 'Go to Your Plan' : 'Create Free Account'}
             </button>
             <button className="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white hover:text-primary-600 transition-colors duration-200 text-lg">
               Learn More
@@ -298,7 +325,7 @@ const HomePage: React.FC = () => {
       </footer>
 
       {/* Auth Modal */}
-      {showAuthModal && (
+      {!isAuthenticated && showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
       )}
     </div>

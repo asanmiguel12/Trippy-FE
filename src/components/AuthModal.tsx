@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -8,41 +10,32 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+    setErrorMessage('');
+    setIsSubmitting(true);
+
     try {
-      const res = await fetch(
-        'https://trippy-be.onrender.com/api/auth/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: email,
-            password
-          })
-        }
-      );
-  
-      if (!res.ok) {
-        throw new Error('Authentication failed');
-      }
-  
-      const data = await res.json();
-      console.log('JWT response:', data);
-  
-      sessionStorage.setItem('access_token', data.token);
-  
+      const accessToken = isCreatingAccount
+        ? await authService.registerAndLogin({ email, password })
+        : await authService.login({ email, password });
+      login(accessToken);
       onClose();
     } catch (err) {
-      console.error('Login error:', err);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : (isCreatingAccount ? 'Account creation failed' : 'Authentication failed')
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
-  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -55,7 +48,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
         </button>
 
         <h2 className="text-2xl font-bold mb-6 text-center">
-          Sign In or Create Account
+          {isCreatingAccount ? 'Create Account' : 'Sign In'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,11 +72,33 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full btn-primary"
           >
-            Continue
+            {isSubmitting
+              ? (isCreatingAccount ? 'Creating Account...' : 'Signing In...')
+              : (isCreatingAccount ? 'Create Account' : 'Sign In')}
           </button>
+
+          {errorMessage && (
+            <p className="text-sm text-red-600 text-center">{errorMessage}</p>
+          )}
         </form>
+
+        <div className="mt-4 text-center text-sm">
+          <button
+            type="button"
+            className="text-primary-600 hover:text-primary-700"
+            onClick={() => {
+              setIsCreatingAccount(prev => !prev);
+              setErrorMessage('');
+            }}
+          >
+            {isCreatingAccount
+              ? 'Already have an account? Sign in'
+              : 'New user? Create an account'}
+          </button>
+        </div>
       </div>
     </div>
   );

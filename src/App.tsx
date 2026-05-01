@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { BackendWarmupProvider, useBackendWarmup } from './contexts/BackendWarmupContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { setWarmupHandlers } from './services/api';
 import BackendWarmupScreen from './components/BackendWarmupScreen';
 import HomePage from './components/HomePage';
@@ -35,11 +36,13 @@ function AppContent() {
 
 function App() {
   return (
-    <BackendWarmupProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </BackendWarmupProvider>
+    <AuthProvider>
+      <BackendWarmupProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </BackendWarmupProvider>
+    </AuthProvider>
   );
 }
 

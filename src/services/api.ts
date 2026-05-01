@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse, ApiError } from '../types/api';
+import { tokenStorage } from '../auth/tokenStorage';
 
 // API Configuration
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'https://trippy-be.onrender.com/api';
@@ -86,7 +87,7 @@ const retryRequest = async (
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = tokenStorage.get();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -121,6 +122,14 @@ apiClient.interceptors.response.use(
       if (isProduction() && isCreateTrip) {
         warmupHandlers?.hideWarmup();
       }
+
+      if (error.response.status === 401) {
+        tokenStorage.clear();
+        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+          window.location.href = '/';
+        }
+      }
+
       const responseData = error.response.data as any;
       apiError.message = responseData?.message || error.message;
       apiError.code = error.response.status.toString();
@@ -173,13 +182,13 @@ export async function authFetch(
   url: string,
   options: RequestInit = {}
 ) {
-  const token = sessionStorage.getItem('access_token');
+  const token = tokenStorage.get();
 
   return fetch(url, {
     ...options,
     headers: {
       ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       'Content-Type': 'application/json'
     }
   });
