@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
+import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import { CreateTripRequest, Activity } from '../types/api';
@@ -11,6 +12,7 @@ import TripMap from './TripMap';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState('');
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
@@ -160,13 +162,21 @@ const PlanPage: React.FC = () => {
               </button>
               <h1 className="text-2xl font-bold text-gray-900">Trip Planning</h1>
             </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="btn-primary flex items-center"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Trip
-            </button>
+            <div className="flex items-center space-x-3">
+              {isAuthenticated && (
+                <div className="flex items-center text-gray-600">
+                  <UserCircle2 className="h-5 w-5 mr-1" />
+                  <span className="text-sm">Logged in</span>
+                </div>
+              )}
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="btn-primary flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Trip
+              </button>
+            </div>
           </div>
         </div>
       </header>

@@ -8,7 +8,8 @@ import {
   Heart,
   MapPin,
   Calendar,
-  Users
+  Users,
+  UserCircle2
 } from 'lucide-react';
 import { usePopularDestinations, useToggleFavorite } from '../hooks/useDestinations';
 import { useAuth } from '../contexts/AuthContext';
@@ -83,7 +84,7 @@ const HomePage: React.FC = () => {
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
                 <>
-                  <span className="text-sm text-gray-600">Logged in</span>
+                  <UserCircle2 className="h-6 w-6 text-primary-600 hover:text-primary-700 cursor-pointer" />
                   <button
                     className="btn-secondary"
                     onClick={handleLogout}
