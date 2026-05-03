@@ -52,6 +52,13 @@ const HomePage: React.FC = () => {
     setShowAuthModal(false);
   };
 
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
       {/* Header */}
@@ -64,9 +71,12 @@ const HomePage: React.FC = () => {
             </div>
 
             <nav className="hidden md:flex space-x-8">
-              <span className="text-gray-600 hover:text-primary-600 cursor-pointer">
+              <button
+                onClick={() => scrollToSection('destinations')}
+                className="text-gray-600 hover:text-primary-600 bg-transparent border-none cursor-pointer"
+              >
                 Destinations
-              </span>
+              </button>
               <button
                 onClick={() => navigate('/plan')}
                 className="text-gray-600 hover:text-primary-600 bg-transparent border-none cursor-pointer"
@@ -132,7 +142,10 @@ const HomePage: React.FC = () => {
               Start Planning
               <ArrowRight className="ml-2 h-5 w-5" />
             </button>
-            <button className="btn-secondary text-lg px-8 py-4 flex items-center justify-center">
+            <button
+              onClick={() => scrollToSection('destinations')}
+              className="btn-secondary text-lg px-8 py-4 flex items-center justify-center"
+            >
               <Camera className="mr-2 h-5 w-5" />
               Explore Destinations
             </button>
@@ -187,7 +200,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Popular Destinations */}
-      <section className="py-20">
+      <section id="destinations" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Popular Destinations</h2>
