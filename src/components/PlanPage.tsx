@@ -9,11 +9,13 @@ import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
+import AuthModal from './AuthModal';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState('');
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -168,6 +170,14 @@ const PlanPage: React.FC = () => {
                   <UserCircle2 className="h-5 w-5 mr-1" />
                   <span className="text-sm">Logged in</span>
                 </div>
+              )}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="btn-secondary"
+                >
+                  Sign In
+                </button>
               )}
               <button
                 onClick={() => setShowCreateForm(true)}
@@ -548,6 +558,9 @@ const PlanPage: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+        {!isAuthenticated && showAuthModal && (
+          <AuthModal onClose={() => setShowAuthModal(false)} />
         )}
       </div>
     </div>
