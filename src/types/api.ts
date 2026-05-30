@@ -28,6 +28,7 @@ export interface CreateDestinationRequest {
 
 // Trip Types
 export interface Trip {
+  userId: string;
   id: string;
   name: string;
   description: string;

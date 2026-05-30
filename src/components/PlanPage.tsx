@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
+import { useTrip } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
@@ -20,8 +21,9 @@ const PlanPage: React.FC = () => {
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitInProgressRef = useRef(false);
+  const [selectedTripId] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState('');
-  const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();
+  const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useTrip(selectedTripId);  
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData ?? [];
@@ -37,10 +39,10 @@ const PlanPage: React.FC = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Debug: Log the data to see what's happening
   console.log('PlanPage - tripsData:', tripsData);
   console.log('PlanPage - tripsLoading:', tripsLoading);
   console.log('PlanPage - tripsError:', tripsError);
+  console.log('PlanPage - selectedTripId:', selectedTripId);
 
   useEffect(() => {
     console.log('[PlanPage] tripsData changed:', tripsData);
@@ -117,7 +119,7 @@ const PlanPage: React.FC = () => {
       console.error('Failed to create trip:', error);
     } finally {
       clearTimeout(warmupTimer);
-      setLoadingMessage(''); // remove message
+      setLoadingMessage(''); 
       setIsSubmitting(false);
       submitInProgressRef.current = false;
     }

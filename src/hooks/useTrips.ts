@@ -20,6 +20,14 @@ export function useTrip(id: string, enabled: boolean = true) {
   );
 }
 
+// Hook to get user's trip by ID
+export function useUserTrip(userId: number) {
+  return useApi<ApiResponse<Trip>>(
+    () => tripService.getUserTripById(userId),
+    [userId],
+  );
+}
+
 // Hook to get public trips
 export function usePublicTrips(page: number = 1, limit: number = 10) {
   return useApi<ApiResponse<Trip[]>>(

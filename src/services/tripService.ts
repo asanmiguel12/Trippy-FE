@@ -46,6 +46,7 @@ const mockTrips: Trip[] = [
     isPublic: true,
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T10:00:00Z',
+    userId: ''
   },
 
   // ───────────────────────────────
@@ -92,6 +93,7 @@ const mockTrips: Trip[] = [
     isPublic: true,
     createdAt: '2024-02-10T09:00:00Z',
     updatedAt: '2024-02-10T09:00:00Z',
+    userId: ''
   },
 
   // ───────────────────────────────
@@ -138,6 +140,7 @@ const mockTrips: Trip[] = [
     isPublic: false,
     createdAt: '2024-03-05T12:00:00Z',
     updatedAt: '2024-03-05T12:00:00Z',
+    userId: ''
   },
 
   // ───────────────────────────────
@@ -184,6 +187,7 @@ const mockTrips: Trip[] = [
     isPublic: true,
     createdAt: '2024-04-01T08:30:00Z',
     updatedAt: '2024-04-01T08:30:00Z',
+    userId: ''
   },
 ];
 
@@ -197,7 +201,6 @@ export const tripService = {
       try {
         return await api.get<Trip[]>('/trips');
       } catch (error) {
-        // Fallback to mock data
         await delay(400);
         return {
           data: mockTrips,
@@ -213,9 +216,26 @@ export const tripService = {
     try {
       return await api.get<Trip>(`/trips/${id}`);
     } catch (error) {
-      // Fallback to mock data
       await delay(300);
       const trip = mockTrips.find(t => t.id === id);
+      if (!trip) {
+        throw new Error('Trip not found');
+      }
+      return {
+        data: trip,
+        success: true,
+        message: 'Using mock data - API not available'
+      };
+    }
+  },
+
+  // Get user's trip by ID
+  getUserTripById: async (userId: number): Promise<ApiResponse<Trip>> => {
+    try {
+      return await api.get<Trip>(`/trips/user/${userId}`);
+    } catch (error) {
+      await delay(300);
+      const trip = mockTrips.find(t => t.userId === userId.toString());
       if (!trip) {
         throw new Error('Trip not found');
       }
@@ -256,7 +276,8 @@ export const tripService = {
         totalCost: data.activities.reduce((sum, activity) => sum + activity.cost, 0),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        name: ''
+        name: '',
+        userId: ''
       };
       return newTrip;
     }
