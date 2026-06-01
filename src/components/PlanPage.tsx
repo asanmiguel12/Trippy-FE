@@ -275,11 +275,8 @@ const PlanPage: React.FC = () => {
     <ErrorMessage error={tripsError} onRetry={refetchTrips} />
   )}
 
-  {/* Show "no trips" message if fetch completed but array is empty */}
   {!tripsLoading &&
-    !tripsError &&
-    Array.isArray(userTrips) &&
-    userTrips.length === 0 && (
+  !tripsError && (
       <div className="text-center py-12">
         <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
