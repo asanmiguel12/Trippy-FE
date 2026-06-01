@@ -11,7 +11,6 @@ import ErrorMessage from './ErrorMessage';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
 import AuthModal from './AuthModal';
-import { tokenStorage } from '../auth/tokenStorage';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
