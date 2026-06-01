@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2, Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateTrip } from '../hooks/useTrips';
 import { useUserTrips } from '../hooks/useTrips';
@@ -11,6 +11,8 @@ import ErrorMessage from './ErrorMessage';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
 import AuthModal from './AuthModal';
+import { usePopularDestinations, useToggleFavorite } from '../hooks/useDestinations';
+import { authFetch } from '../services/api';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,16 +24,27 @@ const PlanPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitInProgressRef = useRef(false);
   const [selectedTripId] = useState<string>('');
-  const [userId] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState('');
-  const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();  
-  const { data: destinationsData } = useDestinations();
+  const {
+    data: tripsData,
+    loading: tripsLoading,
+    error: tripsError,
+    refetch: refetchTrips,
+  } = useUserTrips();
+  
+  const {
+    data: destinationsData,
+    loading: destinationsLoading,
+    error: destinationsError,
+    refetch: refetchDestinations,
+  } = usePopularDestinations(3);
+  
+  const toggleFavoriteMutation = useToggleFavorite();
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData ?? [];
-
   const ITEMS_PER_PAGE = 3;
   const [currentPage, setCurrentPage] = useState<number>(1);
-
   const tripsArray = Array.isArray(userTrips) ? userTrips : [];
   const totalPages = Math.ceil(tripsArray.length / ITEMS_PER_PAGE);
 
@@ -40,14 +53,49 @@ const PlanPage: React.FC = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavoriteMutation.mutate(id);
+      refetchDestinations();
+    } catch (err) {
+      console.error('Failed to toggle favorite', err);
+    }
+  };
+
   console.log('PlanPage - tripsData:', tripsData);
   console.log('PlanPage - tripsLoading:', tripsLoading);
   console.log('PlanPage - tripsError:', tripsError);
   console.log('PlanPage - selectedTripId:', selectedTripId);
 
+  
+
   useEffect(() => {
     console.log('[PlanPage] tripsData changed:', tripsData);
   }, [tripsData]);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const response = await authFetch(
+          'https://trippy-be.onrender.com/api/auth/me'
+        );
+  
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+  
+        const id = await response.text();
+  
+        console.log('USER ID:', id);
+  
+        setUserId(String(id));
+      } catch (err) {
+        console.error('Failed to fetch user id', err);
+      }
+    };
+  
+    fetchUserId();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -99,7 +147,7 @@ const PlanPage: React.FC = () => {
       endDate: formData.endDate,
       isPublic: formData.isPublic,
       activities,
-      userId,
+      userId: userId || 'NULL',
     };
   
     try {
@@ -116,7 +164,7 @@ const PlanPage: React.FC = () => {
       });
       setActivities([]);
       setSelectedDestination('');
-      refetch();
+      refetch: refetchTrips;
     } catch (error) {
       console.error('Failed to create trip:', error);
     } finally {
@@ -225,7 +273,7 @@ const PlanPage: React.FC = () => {
 
   {/* Show error message if there is one */}
   {tripsError && (
-    <ErrorMessage error={tripsError} onRetry={refetch} />
+    <ErrorMessage error={tripsError} onRetry={refetchTrips} />
   )}
 
   {/* Show "no trips" message if fetch completed but array is empty */}
@@ -332,6 +380,75 @@ const PlanPage: React.FC = () => {
   </>
 )}
 </div> 
+
+ {/* Popular Destinations */}
+ <section id="destinations" className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Popular Destinations</h2>
+            <p className="text-xl text-gray-600">
+              Discover the most loved places around the world
+            </p>
+          </div>
+
+          {destinationsError && (
+            <ErrorMessage error={destinationsError} onRetry={refetchTrips} />
+          )}
+
+          {destinationsData?.data && (
+            <div className="grid md:grid-cols-3 gap-8">
+              {destinationsData.data.map(destination => (
+                <div
+                  key={destination.id}
+                  className="card overflow-hidden cursor-pointer hover:shadow-lg"
+                  onClick={() => navigate('/plan')}
+                >
+                  <div
+                    className="relative h-64 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${destination.imageUrl})` }}
+                  >
+                    <div className="absolute inset-0 bg-black bg-opacity-20" />
+                    <button
+                      className="absolute top-4 right-4 bg-white bg-opacity-20 rounded-full p-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleFavorite(destination.id);
+                      }}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          destination.isFavorite
+                            ? 'text-red-400 fill-red-400'
+                            : 'text-white'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold">{destination.name}</h3>
+                    <p className="text-gray-600 my-2">{destination.description}</p>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                      <span className="ml-1 text-sm">
+                        {destination.rating.toFixed(1)} (
+                        {destination.reviewCount.toLocaleString()})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!destinationsLoading &&
+            (!destinationsData?.data || destinationsData.data.length === 0) && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No destinations available.</p>
+              </div>
+            )}
+        </div>
+      </section>
 
         {/* Create Trip Modal */}
         {showCreateForm && (

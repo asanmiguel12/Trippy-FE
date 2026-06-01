@@ -12,7 +12,6 @@ const isProduction = () => {
   return !baseUrl.includes('localhost') && !baseUrl.includes('127.0.0.1');
 };
 
-// Check if this is a create trip request (POST to /trips)
 const isCreateTripRequest = (config: InternalAxiosRequestConfig): boolean => {
   const method = config.method?.toUpperCase();
   const url = config.url || '';
@@ -143,13 +142,10 @@ apiClient.interceptors.response.use(
         if (isTimeout || isNetworkError) {
           const requestKey = getRequestKey(config);
           
-          // Show warmup only for create trip requests
           warmupHandlers?.showWarmup();
           warmupHandlers?.incrementCheckCount();
           
-          // Check if we're already retrying this exact request
           if (config && !retryAttempts.has(requestKey)) {
-            // Create a retry promise and store it
             const retryPromise = retryRequest(config)
               .then((response) => {
                 retryAttempts.delete(requestKey);
@@ -165,7 +161,6 @@ apiClient.interceptors.response.use(
             retryAttempts.set(requestKey, retryPromise);
             return retryPromise;
           } else if (retryAttempts.has(requestKey)) {
-            // If already retrying, return the existing promise
             return retryAttempts.get(requestKey)!;
           }
         }

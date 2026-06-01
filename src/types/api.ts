@@ -61,7 +61,7 @@ export interface CreateTripRequest {
   location: string;
   activities: Omit<Activity, 'id'>[];
   isPublic: boolean;
-  userId: string;
+  userId?: string;
 }
 
 // User Types
