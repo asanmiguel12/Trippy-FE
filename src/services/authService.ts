@@ -34,14 +34,20 @@ export const authService = {
   },
 
   async login(data: LoginRequest): Promise<string> {
-    const response = await axios.post<AuthTokenResponse>(`${API_BASE_URL}/auth/login`, {
-      username: data.email,
-      password: data.password,
-    });
+    const response = await axios.post<AuthTokenResponse>(
+      `${API_BASE_URL}/auth/login`,
+      {
+        email: data.email,
+        password: data.password,
+      }
+    );
+  
     const token = extractAccessToken(response.data);
+  
     if (!token) {
       throw new Error('No access token in login response');
     }
+  
     return token;
   },
 
