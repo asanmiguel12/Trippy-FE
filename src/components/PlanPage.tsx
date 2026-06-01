@@ -4,7 +4,6 @@ import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, Use
 import { useNavigate } from 'react-router-dom';
 import { useCreateTrip } from '../hooks/useTrips';
 import { useUserTrips } from '../hooks/useTrips';
-import { useDestinations } from '../hooks/useDestinations';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
