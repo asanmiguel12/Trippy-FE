@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateTrip } from '../hooks/useTrips';
-import { useTrip } from '../hooks/useTrips';
+import { useUserTrips } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
@@ -11,6 +11,7 @@ import ErrorMessage from './ErrorMessage';
 import { CreateTripRequest, Activity } from '../types/api';
 import TripMap from './TripMap';
 import AuthModal from './AuthModal';
+import { tokenStorage } from '../auth/tokenStorage';
 
 const PlanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ const PlanPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitInProgressRef = useRef(false);
   const [selectedTripId] = useState<string>('');
+  const [userId] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState('');
-  const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useTrip(selectedTripId);  
+  const { data: tripsData, loading: tripsLoading, error: tripsError, refetch } = useUserTrips();  
   const { data: destinationsData } = useDestinations();
   const createTripMutation = useCreateTrip();
   const userTrips = tripsData ?? [];
@@ -98,6 +100,7 @@ const PlanPage: React.FC = () => {
       endDate: formData.endDate,
       isPublic: formData.isPublic,
       activities,
+      userId,
     };
   
     try {

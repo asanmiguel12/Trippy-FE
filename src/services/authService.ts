@@ -58,4 +58,17 @@ export const authService = {
     }
     return this.login({ email: data.email, password: data.password });
   },
+
+  async getUserId(token: string): Promise<number> {
+    const response = await axios.get<number>(
+      `${API_BASE_URL}/auth/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  
+    return response.data;
+  }
 };

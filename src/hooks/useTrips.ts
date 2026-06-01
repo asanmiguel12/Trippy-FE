@@ -1,11 +1,27 @@
 import { useApi, useMutation } from './useApi';
 import { tripService } from '../services/tripService';
 import { Trip, CreateTripRequest, ApiResponse } from '../types/api';
+import { tokenStorage } from '../auth/tokenStorage';
+import { authService } from '../services/authService';
 
 // Hook to get user's trips
 export function useUserTrips() {
   return useApi<ApiResponse<Trip[]>>(
-    () => tripService.getUserTrips(),
+    async () => {
+      const token = tokenStorage.get();
+
+      if (!token) {
+        return {
+          data: [],
+          success: true,
+          message: 'No user logged in'
+        };
+      }
+
+      const userId = await authService.getUserId(token);
+
+      return tripService.getUserTripById(userId);
+    },
     [],
     true
   );
@@ -21,10 +37,10 @@ export function useTrip(id: string, enabled: boolean = true) {
 }
 
 // Hook to get user's trip by ID
-export function useUserTrip(userId: number) {
+export function useUserTrip(id: string) {
   return useApi<ApiResponse<Trip>>(
-    () => tripService.getUserTripById(userId),
-    [userId],
+    () => tripService.getById(id),
+    [id],
   );
 }
 

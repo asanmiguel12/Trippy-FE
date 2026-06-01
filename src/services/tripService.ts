@@ -229,23 +229,24 @@ export const tripService = {
     }
   },
 
-  // Get user's trip by ID
-  getUserTripById: async (userId: number): Promise<ApiResponse<Trip>> => {
-    try {
-      return await api.get<Trip>(`/trips/user/${userId}`);
-    } catch (error) {
-      await delay(300);
-      const trip = mockTrips.find(t => t.userId === userId.toString());
-      if (!trip) {
-        throw new Error('Trip not found');
-      }
-      return {
-        data: trip,
-        success: true,
-        message: 'Using mock data - API not available'
-      };
-    }
-  },
+ // Get user's trips
+getUserTripById: async (userId: number): Promise<ApiResponse<Trip[]>> => {
+  try {
+    return await api.get<Trip[]>(`/trips/user/${userId}`);
+  } catch (error) {
+    await delay(300);
+
+    const trips = mockTrips.filter(
+      t => t.userId === userId.toString()
+    );
+
+    return {
+      data: trips,
+      success: true,
+      message: 'Using mock data - API not available'
+    };
+  }
+},
 
   // Create new trip
   create: async (data: CreateTripRequest): Promise<Trip> => {
