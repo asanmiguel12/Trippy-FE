@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Plus, Trash2, Edit, UserCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useUserTrips, useCreateTrip } from '../hooks/useTrips';
+import { useCreateTrip } from '../hooks/useTrips';
 import { useTrip } from '../hooks/useTrips';
 import { useDestinations } from '../hooks/useDestinations';
 import { useAuth } from '../contexts/AuthContext';
