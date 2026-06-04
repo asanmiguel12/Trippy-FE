@@ -22,7 +22,6 @@ const PlanPage: React.FC = () => {
   const [activities, setActivities] = useState<Omit<Activity, 'id'>[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitInProgressRef = useRef(false);
-  const [selectedTripId] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState('');
   const {
@@ -61,16 +60,15 @@ const PlanPage: React.FC = () => {
     }
   };
 
-  console.log('PlanPage - tripsData:', tripsData);
-  console.log('PlanPage - tripsLoading:', tripsLoading);
-  console.log('PlanPage - tripsError:', tripsError);
-  console.log('PlanPage - selectedTripId:', selectedTripId);
-
-  
-
   useEffect(() => {
     console.log('[PlanPage] tripsData changed:', tripsData);
   }, [tripsData]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refetchTrips();
+    }
+  }, [isAuthenticated, refetchTrips]);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -276,7 +274,8 @@ const PlanPage: React.FC = () => {
   )}
 
   {!tripsLoading &&
-  !tripsError && (
+  !tripsError &&
+  tripsData?.data?.length === 0 && (
       <div className="text-center py-12">
         <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
